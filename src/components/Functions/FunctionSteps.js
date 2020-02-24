@@ -10,6 +10,7 @@ import {Steps,
   InputNumber,
   Switch,
   Button,
+  message,
 } from "antd";
 import http from '../../service';
 import FunctionScript from "./FunctionScript";
@@ -106,6 +107,7 @@ class FunctionSteps extends React.Component {
           index: 3,
           description: '重新部署',
           status: 'process',
+          icon: <Icon type="exclamation-circle" style={{ color: "#fdd835", fontSize: 30 }} />
         }
       }
       let completeIndex = originSteps[completeStep].index;
@@ -164,6 +166,24 @@ class FunctionSteps extends React.Component {
     }).catch()
   }
 
+  functionUpdate() {
+    let id = this.props.match.params.id;
+    http.put(`function/${id}`, {
+      name: this.state.name,
+      desc: this.state.desc,
+      version: this.state.version,
+      runtime_id: this.state.runtime_id,
+      ns_id: this.state.namespace_id,
+      handler: `${this.state.moduleName}.${this.state.funcName}`,
+      data_source_id: this.state.dataSource_id,
+      timeout: this.state.timeout + '',
+      size: +this.state.size,
+    }).then(r => {
+      message.success("saved success!");
+      this.refresh()
+    }).catch()
+  }
+
   stepClick(key, index) {
     let targetStepIndex = this.state.steps[key].index;
     let completeStepIndex = this.state.completeStep ? this.state.steps[this.state.completeStep].index : 0;
@@ -181,7 +201,7 @@ class FunctionSteps extends React.Component {
     let commonStyle = {
       width: 100,
       height: 100,
-      cursor: 'pointer',
+      cursor: this.props.type === 'create' ? 'pointer' : 'not-allowed',
       borderRadius: 6,
       ...centerStyle,
     };
@@ -214,12 +234,12 @@ class FunctionSteps extends React.Component {
         >
           <Row gutter={16}>
             {
-              this.state.runtimeList.map(item => (
-                <Col span={8} style={{ marginTop: 10, ...centerStyle }}>
+              this.state.runtimeList.map((item, index) => (
+                <Col key={index} span={8} style={{ marginTop: 10, ...centerStyle }}>
                   <div
                     align="center"
                     style={this.state.runtime_id === item.id ? activeStyle : defaultStyle}
-                    onClick={() => this.setState({runtime_id: item.id})}
+                    onClick={this.props.type === "create" ? () => this.setState({runtime_id: item.id}) : null}
                   >
                     <div>
                       <div style={{ fontSize: 24 }}>{item.lang}</div>
@@ -236,7 +256,20 @@ class FunctionSteps extends React.Component {
   }
 
   refresh() {
+    console.log("refresh");
     this.functionGet()
+  }
+
+  setDeployStatus(status, setLoading) {
+    console.log(status);
+    let steps = this.state.steps;
+    steps.deployed.status = status;
+    if (setLoading) {
+      steps.deployed.icon = <Icon type="loading" />
+    } else {
+      steps.deployed.icon = null
+    }
+    this.setState({steps})
   }
 
   BasicRender() {
@@ -260,8 +293,8 @@ class FunctionSteps extends React.Component {
                 loading={this.state.ns_loading}
                 onChange={value => this.setState({namespace_id: value})}>
                 {
-                  this.state.nameSpaceList.map(item => (
-                    <Option value={item.id}>{item.name}</Option>
+                  this.state.nameSpaceList.map((item, index) => (
+                    <Option key={index} value={item.id}>{item.name}</Option>
                   ))
                 }
               </Select>
@@ -291,8 +324,8 @@ class FunctionSteps extends React.Component {
                 loading={this.state.data_source_loading}
                 onChange={value => this.setState({dataSource_id: value})}>
                 {
-                  this.state.dataSourceList.map(item => (
-                    <Option value={item.id}>{item.name}</Option>
+                  this.state.dataSourceList.map((item, index) => (
+                    <Option key={index} value={item.id}>{item.name}</Option>
                   ))
                 }
               </Select>
@@ -316,7 +349,14 @@ class FunctionSteps extends React.Component {
             <Switch value={this.state._private} onChange={v => this.setState({_private: v})} />
           </div>
           <div style={{ marginBottom: 20 }}>
-            <Button type="primary" onClick={this.functionCreate.bind(this)}>Next</Button>
+            <Button
+              type="primary"
+              onClick={this.props.type === 'create'
+                ? this.functionCreate.bind(this)
+                : this.functionUpdate.bind(this)}
+            >
+              {this.props.type === 'create' ? 'Next' : 'Save'}
+            </Button>
           </div>
         </Col>
       </Row>
@@ -338,7 +378,13 @@ class FunctionSteps extends React.Component {
 
   DeployRender() {
     return (
-      <FunctionDeploy id={this.state.id} status={this.state.status} size={this.state.size}/>
+      <FunctionDeploy
+        id={this.state.id}
+        status={this.state.status}
+        size={this.state.size}
+        setDeployStatus={this.setDeployStatus.bind(this)}
+        refresh={this.refresh.bind(this)}
+      />
     )
   }
 
@@ -371,7 +417,11 @@ class FunctionSteps extends React.Component {
           current={this.state.currentIndex - 1}
         >
           {Object.keys(steps).map((key, index) => (
-            <Step {...steps[key]} onClick={this.stepClick.bind(this, key, index)} style={{ cursor: 'pointer' }}/>
+            <Step
+              {...steps[key]}
+              onClick={this.stepClick.bind(this, key, index)}
+              style={{ cursor: 'pointer' }}
+            />
           ))}
         </Steps>
         <div style={contentStyle}>

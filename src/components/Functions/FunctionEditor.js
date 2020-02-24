@@ -2,7 +2,7 @@ import React from "react";
 import {Button, Empty, Icon, message, Radio, Spin} from "antd";
 import http from "../../service";
 import LangTag from "./LangTag";
-import PrismCode from "./PrismCode";
+import CodePreview from "./CodePreview";
 
 class FunctionEditor extends React.Component {
   constructor(props) {
@@ -18,7 +18,7 @@ class FunctionEditor extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.props)
+    console.log(this.props);
     if (this.props.editor === "script"
       && (this.props.status === "uploaded"
       || this.props.status === "deployed"
@@ -60,18 +60,14 @@ class FunctionEditor extends React.Component {
 
   uploadDeps() {
     let files = this.fileInput.files;
-    if (files.length > 0) {
-      let data = {};
-      const reader = new FileReader();
-      reader.readAsText(this.fileInput.files[0]);
+    if (files.length > 0 && this.state.fileData) {
       message.info("start uploading...");
-      reader.onload = () => {
-        data.deps = reader.result;
-        http.put(`/function/${this.props.id}`, data).then(r => {
-          message.info("upload success!");
-          this.props.refresh()
-        }).catch(e => {})
-      };
+      http.put(`/function/${this.props.id}`, {
+        deps: this.state.fileData
+      }).then(r => {
+        message.info("upload success!");
+        this.props.refresh()
+      }).catch(e => {})
     }
   }
 
@@ -145,7 +141,7 @@ class FunctionEditor extends React.Component {
               <div style={centerStyle}>
                 {this.state.filename && <Icon type="check-circle" theme="twoTone" twoToneColor="#52c41a" style={{fontSize: 50}} />}
               </div>
-              <span>{`${this.state.filename ? `Selected: ${this.state.filename}` : 'Select Function File'}`}</span>
+              <span>{`${this.state.filename ? `Selected: ${this.state.filename}` : this.props.editor === "script" ? 'Select Function File' : 'Select Dependencies File'}`}</span>
             </div>
           </div>
           <Button type="primary" block onClick={this.props.editor === "script" ? this.uploadScript.bind(this) : this.uploadDeps.bind(this)}>Upload</Button>
@@ -165,23 +161,14 @@ class FunctionEditor extends React.Component {
   }
 
   scriptRender(script, runtime, handler, type) {
-    let langMap = {
-      "nodeJS": 'javascript'
-    };
-    let depsMap = {
-      "nodeJS": 'package.json'
-    };
-    let depsLangMap = {
-      'nodeJS': 'json'
-    };
     if (this.props.editor === "script") {
-      if (this.state.fileData) {
+      if (script) {
         if (type === 'code' || type === 'text') {
           return (
             <Spin spinning={this.state.loading}>
               <LangTag runtime={runtime} />
               <span style={{ fontSize: 20 }}>{`Handler: ${handler}`}</span>
-              <PrismCode code={script} language={langMap[runtime.lang]} plugins={["line-numbers"]}/>
+              <CodePreview code={script} language={runtime.suffix}/>
             </Spin>
           )
         } else {
@@ -197,13 +184,13 @@ class FunctionEditor extends React.Component {
       } else {
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       }
-    } else {
-      if (this.state.fileData) {
+    } else if (this.props.editor === "deps") {
+      if (script) {
         return (
           <Spin spinning={this.state.loading}>
             <LangTag runtime={runtime} />
-            <span style={{ fontSize: 20 }}>{depsMap[runtime.lang]}</span>
-            <PrismCode code={script} language={depsLangMap[runtime.lang]} plugins={["line-numbers"]}/>
+            <span style={{ fontSize: 20 }}>{runtime.depsName}</span>
+            <CodePreview code={script} language={runtime.depsLang}/>
           </Spin>
         )
       } else {
