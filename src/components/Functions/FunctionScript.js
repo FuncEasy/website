@@ -27,6 +27,7 @@ class FunctionScript extends React.Component {
               id={this.props.id}
               status={this.props.status}
               runtime={this.props.runtime}
+              moduleName={this.props.moduleName}
               handler={this.props.handler}
               refresh={this.props.refresh}
             />
@@ -39,6 +40,7 @@ class FunctionScript extends React.Component {
               status={this.props.status}
               runtime={this.props.runtime}
               handler={this.props.handler}
+              moduleName={this.props.moduleName}
               refresh={this.props.refresh}
             />
           </TabPane>

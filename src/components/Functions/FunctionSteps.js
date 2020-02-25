@@ -1,5 +1,6 @@
 import React from 'react';
-import {Steps,
+import {
+  Steps,
   Spin,
   Select,
   Divider,
@@ -10,7 +11,7 @@ import {Steps,
   InputNumber,
   Switch,
   Button,
-  message,
+  message, Alert,
 } from "antd";
 import http from '../../service';
 import FunctionScript from "./FunctionScript";
@@ -72,7 +73,8 @@ class FunctionSteps extends React.Component {
       currentStep: 'basic',
       currentIndex: 1,
       completeStep: '',
-      needRedeploy: false,
+      selectedStep: '',
+      needRedeploy: false
     };
   }
 
@@ -109,16 +111,20 @@ class FunctionSteps extends React.Component {
           status: 'process',
           icon: <Icon type="exclamation-circle" style={{ color: "#fdd835", fontSize: 30 }} />
         }
+      } else {
+        this.setState({needRedeploy: false});
       }
       let completeIndex = originSteps[completeStep].index;
-      let currentStep = 'deployed';
-      let currentIndex = 3;
+      let currentStep = this.state.selectedStep ? this.state.selectedStep : 'deployed';
+      let currentIndex = this.state.selectedStep ? originSteps[this.state.selectedStep].index : 3;
       Object.keys(originSteps).forEach(key => {
         if (originSteps[key].index <= completeIndex) originSteps[key].status = "finish";
         if (originSteps[key].index === completeIndex + 1) {
           originSteps[key].status = "process";
-          currentStep = key;
-          currentIndex = originSteps[key].index;
+          if (!this.state.selectedStep) {
+            currentStep = key;
+            currentIndex = originSteps[key].index;
+          }
         }
         if (originSteps[key].index > completeIndex + 1) originSteps[key].status = "wait";
       });
@@ -188,7 +194,11 @@ class FunctionSteps extends React.Component {
     let targetStepIndex = this.state.steps[key].index;
     let completeStepIndex = this.state.completeStep ? this.state.steps[this.state.completeStep].index : 0;
     if (targetStepIndex <= completeStepIndex + 1) {
-      this.setState({currentStep: key, currentIndex: index + 1})
+      this.setState({
+        currentStep: key,
+        currentIndex: index + 1,
+        selectedStep: key,
+      })
     }
   }
 
@@ -370,6 +380,7 @@ class FunctionSteps extends React.Component {
         status={this.state.status}
         runtime={this.state.runtimeObj}
         handler={this.state.handler}
+        moduleName={this.state.moduleName}
         refresh={this.refresh.bind(this)}
         deps={this.state.deps}
       />
@@ -424,6 +435,15 @@ class FunctionSteps extends React.Component {
             />
           ))}
         </Steps>
+        {
+          this.state.needRedeploy && (
+            <Alert
+              message="Function Changed! You need redeploy to update"
+              type="warning"
+              showIcon
+            />
+          )
+        }
         <div style={contentStyle}>
           {this.renderContent()}
         </div>

@@ -3,7 +3,14 @@ import {Button, Empty, Icon, message, Radio, Spin} from "antd";
 import http from "../../service";
 import LangTag from "./LangTag";
 import CodePreview from "./CodePreview";
-
+import CodeEditor from "./CodeEditor";
+const langMap = {
+  'nodeJS': 'javascript',
+  'PHP': 'php',
+  'Java': 'java',
+  'Go': 'golang',
+  'JSON': 'josn',
+};
 class FunctionEditor extends React.Component {
   constructor(props) {
     super(props);
@@ -17,12 +24,23 @@ class FunctionEditor extends React.Component {
     }
   }
 
+  static getDerivedStateFromProps(nextProps, preState) {
+    if (nextProps.editor === "deps") {
+      return {
+        fileData: nextProps.deps,
+      }
+    }
+  }
+
   componentDidMount() {
-    console.log(this.props);
+    this.getFileData()
+  }
+
+  getFileData() {
     if (this.props.editor === "script"
       && (this.props.status === "uploaded"
-      || this.props.status === "deployed"
-      || this.props.status === "redeploy")
+        || this.props.status === "deployed"
+        || this.props.status === "redeploy")
     ) {
       this.setState({loading: true});
       http.get(`/function/script/${this.props.id}`).then(r => {
@@ -168,7 +186,7 @@ class FunctionEditor extends React.Component {
             <Spin spinning={this.state.loading}>
               <LangTag runtime={runtime} />
               <span style={{ fontSize: 20 }}>{`Handler: ${handler}`}</span>
-              <CodePreview code={script} language={runtime.suffix}/>
+              <CodePreview code={script} language={langMap[runtime.lang]}/>
             </Spin>
           )
         } else {
@@ -201,7 +219,22 @@ class FunctionEditor extends React.Component {
 
   onlineRender() {
     return (
-      <div>online</div>
+      <div>
+        <CodeEditor
+          editor={this.props.editor}
+          id={this.props.id}
+          code={this.state.fileData}
+          handler={this.props.handler}
+          filename={
+            this.props.editor === "script"
+              ? `${this.props.moduleName}.${this.props.runtime.suffix}`
+              : this.props.runtime.depsName
+          }
+          lang={langMap[this.props.runtime.lang]}
+          refresh={this.props.refresh}
+          getFileData={this.getFileData.bind(this)}
+        />
+      </div>
     )
   }
 
