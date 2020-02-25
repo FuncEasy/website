@@ -16,33 +16,41 @@ import {
 import http from '../../service';
 import FunctionScript from "./FunctionScript";
 import FunctionDeploy from "./FunctionDeploy";
+import FunctionTest from "./FunctionTest";
 import { withRouter } from 'react-router-dom'
 const { Step } = Steps;
 const { Option } = Select;
 
-const originSteps = {
-  basic: {
+const originSteps = [
+  {
     key: 'basic',
     title: 'Basic',
-    index: 1,
     description: '基本信息',
     status: 'process',
+    available: true,
   },
-  uploaded: {
+  {
     key: 'uploaded',
     title: 'Function',
-    index: 2,
     description: '函数配置',
     status: 'wait',
+    available: false,
   },
-  deployed: {
+  {
     key: 'deployed',
     title: 'Deploy',
-    index: 3,
     description: '函数部署',
     status: 'wait',
+    available: false,
   },
-};
+  {
+    key: 'test',
+    title: 'Test',
+    description: '函数测试',
+    status: 'wait',
+    available: false,
+  },
+];
 class FunctionSteps extends React.Component {
   constructor(props) {
     super(props);
@@ -55,6 +63,7 @@ class FunctionSteps extends React.Component {
       runtimeList: [],
       runtime_loading: false,
       runtimeObj: {},
+      nameSpaceObj: {},
       dataSourceList: [],
       dataSource_id: undefined,
       data_source_loading: false,
@@ -71,9 +80,9 @@ class FunctionSteps extends React.Component {
       type: this.props.type,
       steps: originSteps,
       currentStep: 'basic',
-      currentIndex: 1,
+      currentIndex: 0,
       completeStep: '',
-      selectedStep: '',
+      selectedIndex: undefined,
       needRedeploy: false
     };
   }
@@ -103,31 +112,37 @@ class FunctionSteps extends React.Component {
       if (completeStep === 'redeploy') {
         this.setState({needRedeploy: true});
         completeStep = 'uploaded';
-        originSteps['deployed'] = {
+        originSteps[2] = {
           key: 'deployed',
           title: 'Redeploy',
-          index: 3,
           description: '重新部署',
+          available: true,
           status: 'process',
           icon: <Icon type="exclamation-circle" style={{ color: "#fdd835", fontSize: 30 }} />
         }
       } else {
         this.setState({needRedeploy: false});
       }
-      let completeIndex = originSteps[completeStep].index;
-      let currentStep = this.state.selectedStep ? this.state.selectedStep : 'deployed';
-      let currentIndex = this.state.selectedStep ? originSteps[this.state.selectedStep].index : 3;
-      Object.keys(originSteps).forEach(key => {
-        if (originSteps[key].index <= completeIndex) originSteps[key].status = "finish";
-        if (originSteps[key].index === completeIndex + 1) {
-          originSteps[key].status = "process";
-          if (!this.state.selectedStep) {
-            currentStep = key;
-            currentIndex = originSteps[key].index;
+      let currentIndex = this.state.selectedIndex;
+      for (let i = 0; i < originSteps.length; i++) {
+        originSteps[i].status = 'finish';
+        originSteps[i].available = true;
+        if (originSteps[i].key === completeStep) {
+          if (i + 1 < originSteps.length && originSteps[i+1].key !== 'test') {
+            originSteps[i+1].status = 'process';
+            originSteps[i+1].available = true;
+            console.log(originSteps[i+1], this.state.selectedIndex);
+            if (this.state.selectedIndex === undefined) {
+              currentIndex = i + 1;
+            } else {
+              currentIndex = this.state.selectedIndex;
+            }
+          } else {
+            currentIndex = i;
           }
+          break;
         }
-        if (originSteps[key].index > completeIndex + 1) originSteps[key].status = "wait";
-      });
+      }
       let handler = r.data.handler;
       let regx = /^([-\w]+).([-\w]+)$/;
       let res = handler.match(regx);
@@ -136,6 +151,7 @@ class FunctionSteps extends React.Component {
         namespace_id: r.data.NameSpaceId,
         runtime_id: r.data.RuntimeId,
         runtimeObj: r.data.Runtime,
+        nameSpaceObj: r.data.NameSpace,
         name: r.data.name,
         status: r.data.status,
         moduleName: res[1],
@@ -149,7 +165,6 @@ class FunctionSteps extends React.Component {
         size: +r.data.size,
         _private: !r.data.private,
         steps: originSteps,
-        currentStep: currentStep,
         currentIndex: currentIndex,
         completeStep: completeStep,
       })
@@ -190,14 +205,11 @@ class FunctionSteps extends React.Component {
     }).catch()
   }
 
-  stepClick(key, index) {
-    let targetStepIndex = this.state.steps[key].index;
-    let completeStepIndex = this.state.completeStep ? this.state.steps[this.state.completeStep].index : 0;
-    if (targetStepIndex <= completeStepIndex + 1) {
+  stepClick(index) {
+    if (this.state.steps[index].available) {
       this.setState({
-        currentStep: key,
-        currentIndex: index + 1,
-        selectedStep: key,
+        currentIndex: index,
+        selectedIndex: index,
       })
     }
   }
@@ -273,11 +285,23 @@ class FunctionSteps extends React.Component {
   setDeployStatus(status, setLoading) {
     console.log(status);
     let steps = this.state.steps;
-    steps.deployed.status = status;
+    steps[2].status = status;
     if (setLoading) {
-      steps.deployed.icon = <Icon type="loading" />
+      steps[2].icon = <Icon type="loading" />
     } else {
-      steps.deployed.icon = null
+      steps[2].icon = null
+    }
+    this.setState({steps})
+  }
+
+  setTestStatus(status, setLoading) {
+    let steps = this.state.steps;
+    steps[3].status = status;
+    steps[3].available = status === 'process';
+    if (setLoading) {
+      steps[3].icon = <Icon type="loading" />
+    } else {
+      steps[3].icon = null
     }
     this.setState({steps})
   }
@@ -394,19 +418,32 @@ class FunctionSteps extends React.Component {
         status={this.state.status}
         size={this.state.size}
         setDeployStatus={this.setDeployStatus.bind(this)}
+        setTestStatus={this.setTestStatus.bind(this)}
         refresh={this.refresh.bind(this)}
       />
     )
   }
 
+  TestRender() {
+    return (
+      <FunctionTest
+        nsName={this.state.nameSpaceObj.name}
+        funcName={this.state.name}
+        version={this.state.version}
+      />
+    )
+  }
+
   renderContent() {
-    switch (this.state.currentStep) {
-      case 'basic':
+    switch (this.state.currentIndex) {
+      case 0:
         return this.BasicRender();
-      case 'uploaded':
+      case 1:
         return this.FunctionRender();
-      case 'deployed':
+      case 2:
         return this.DeployRender();
+      case 3:
+        return this.TestRender();
       default:
         return;
     }
@@ -425,12 +462,16 @@ class FunctionSteps extends React.Component {
       <div style={{ backgroundColor: '#fff', padding: 5 }}>
         <Steps
           type="navigation"
-          current={this.state.currentIndex - 1}
+          current={this.state.currentIndex}
         >
-          {Object.keys(steps).map((key, index) => (
+          {steps.map((item, index) => (
             <Step
-              {...steps[key]}
-              onClick={this.stepClick.bind(this, key, index)}
+              key={item.key}
+              title={item.title}
+              description={item.description}
+              status={item.status}
+              icon={item.icon}
+              onClick={this.stepClick.bind(this, index)}
               style={{ cursor: 'pointer' }}
             />
           ))}

@@ -80,7 +80,7 @@ export default class extends React.Component {
                   <Icon type="deployment-unit" style={{ fontSize: 100, color: '#4fc3f7' }}/>
                 </Col>
                 <Col span={14}>
-                  <pan style={{ fontSize: 40 }}>FuncEasy</pan>
+                  <span style={{ fontSize: 40 }}>FuncEasy</span>
                   <p>A Serverless Platform for Functions</p>
                 </Col>
               </Row>

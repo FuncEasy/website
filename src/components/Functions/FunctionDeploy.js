@@ -49,6 +49,7 @@ class FunctionDeploy extends React.Component {
       if (from === "first-check") {
         if (status === "pending") {
           this.props.setDeployStatus("process", true);
+          this.props.setTestStatus("wait");
           if (!this.timer) this.setTimer("first-check");
           this.setState({
             deploySuccess: false,
@@ -60,16 +61,19 @@ class FunctionDeploy extends React.Component {
         if (status === "success") {
           if (this.timer) this.clearTimer();
           if (!this.state.needRedeploy) this.props.setDeployStatus("finish");
+          this.props.setTestStatus("process");
           this.setState({
             deploySuccess: true,
             deploying: false,
             deployFailed: false,
+            retrying: false,
             needForceDeploy: true,
             lastState: 'success',
           });
         }
         if (status === "failed") {
           this.props.setDeployStatus("error");
+          this.props.setTestStatus("wait");
           this.setState({
             deploySuccess: false,
             deploying: false,
@@ -81,6 +85,7 @@ class FunctionDeploy extends React.Component {
       } else {
         if (status === "pending") {
           this.props.setDeployStatus("process", true);
+          this.props.setTestStatus("wait");
           this.setState({
             deploySuccess: false,
             deploying: this.state.lastState === "deploying",
@@ -91,9 +96,11 @@ class FunctionDeploy extends React.Component {
         if (status === "success") {
           if (this.timer) this.clearTimer();
           this.props.setDeployStatus("finish");
+          this.props.setTestStatus("process");
           this.setState({
             deploySuccess: true,
             deploying: false,
+            retrying: false,
             deployFailed: false,
             needForceDeploy: true,
             lastState: 'success',
@@ -101,6 +108,7 @@ class FunctionDeploy extends React.Component {
         }
         if (status === "failed") {
           this.props.setDeployStatus("error");
+          this.props.setTestStatus("wait");
           this.setState({
             deploySuccess: false,
             deploying: false,

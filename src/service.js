@@ -12,6 +12,7 @@ axios.interceptors.request.use(config => {
 });
 
 axios.interceptors.response.use(r => r, e => {
+  console.log(e.response)
   switch (e.response.status) {
     case 422:
       message.error('填写错误: ' + e.response.data.message);

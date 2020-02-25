@@ -24,11 +24,9 @@ class FunctionEditor extends React.Component {
     }
   }
 
-  static getDerivedStateFromProps(nextProps, preState) {
-    if (nextProps.editor === "deps") {
-      return {
-        fileData: nextProps.deps,
-      }
+  componentWillReceiveProps(nextProps, nextContext) {
+    if (nextProps.editor === "deps" && this.props.deps !== nextProps.deps) {
+      this.setState({deps: nextProps.deps})
     }
   }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Steps, Table, Tag} from "antd";
 import http from '../../service';
-import PipelineStatus from './PipelineStatus';
+import StepsStatus from './StepsStatus';
 
 const { Step } = Steps;
 class FunctionSubTable extends React.Component{
@@ -29,7 +29,7 @@ class FunctionSubTable extends React.Component{
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        render: text => <a>{text}</a>,
+        render: (text, record) => <a onClick={() => window.location.href = `/functions/${record.id}`}>{text}</a>,
       },
       {
         title: 'Version',
@@ -47,7 +47,7 @@ class FunctionSubTable extends React.Component{
         width: 400,
         dataIndex: 'status',
         render: (status, record) =>
-          <PipelineStatus status={status} pipeline={record.pipeline} />,
+          <StepsStatus status={status} id={record.id} size={record.size}/>,
       },
       {
         title: 'Runtime',
@@ -70,7 +70,7 @@ class FunctionSubTable extends React.Component{
       },
     ];
     return (
-      <Table columns={columns} dataSource={this.state.functions} />
+      <Table columns={columns} dataSource={this.state.functions} rowKey={record => record.id}/>
     )
   }
 }
