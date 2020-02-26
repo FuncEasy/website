@@ -9,6 +9,7 @@ import { getAuth } from '../../actions';
 import Dashboard from '../Dashboard';
 import Functions from '../Functions';
 import DataSource from "../DataSource";
+import Token from "../Functions/Token";
 import FunctionSteps from '../Functions/FunctionSteps';
 import DataSourceEditor from '../DataSource/DataSourceEditor';
 const { Header, Content, Footer, Sider } = Layout;
@@ -18,7 +19,8 @@ class App extends React.Component {
     this.menus = [
       {name: '仪表盘', key: 'dashboard', icon: 'compass' },
       {name: '云函数', key: 'functions', icon: 'code-sandbox'},
-      {name: '数据源', key: 'data-source', icon: 'database'}
+      {name: '数据源', key: 'data-source', icon: 'database'},
+      {name: 'Function Token', key: 'token', icon: 'key'}
     ];
     this.state = {
       currentMenu: this.menus.find(o => window.location.pathname.match(o.key)) || this.menus[0],
@@ -76,6 +78,7 @@ class App extends React.Component {
                     <Route exact path="/data-source" component={DataSource}/>
                     <Route exact path="/data-source/create" component={DataSourceEditor('create')}/>
                     <Route exact path="/data-source/:id" component={DataSourceEditor('edit')}/>
+                    <Route exact path="/token" component={Token}/>
                   </Switch>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>Fusion ©2019 Created by ZiqianCheng</Footer>
