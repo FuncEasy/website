@@ -26,7 +26,7 @@ class FunctionEditor extends React.Component {
 
   componentWillReceiveProps(nextProps, nextContext) {
     if (nextProps.editor === "deps" && this.props.deps !== nextProps.deps) {
-      this.setState({deps: nextProps.deps})
+      this.setState({fileData: nextProps.deps})
     }
   }
 
@@ -107,15 +107,27 @@ class FunctionEditor extends React.Component {
       message.error('Unsupported Content Type');
       return
     }
-    const reader = new FileReader();
-    reader.readAsText(this.fileInput.files[0]);
-    reader.onload = () => {
-      this.setState({
-        filename: fileObj.name,
-        fileData: reader.result,
-        contentType: type,
-      });
-    };
+    if (type !== 'zip') {
+      const reader = new FileReader();
+      reader.readAsText(this.fileInput.files[0]);
+      reader.onload = () => {
+        this.setState({
+          filename: fileObj.name,
+          fileData: reader.result,
+          contentType: type,
+        });
+      };
+    } else {
+      const reader = new FileReader();
+      reader.readAsDataURL(this.fileInput.files[0]);
+      reader.onload = () => {
+        this.setState({
+          filename: fileObj.name,
+          fileData: reader.result,
+          contentType: type,
+        });
+      };
+    }
   }
 
   uploadRender() {

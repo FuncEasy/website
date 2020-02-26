@@ -1,7 +1,8 @@
 import React from 'react';
-import { Card } from 'antd';
+import {Card, message, Modal} from 'antd';
 import http from '../../service';
 import FunctionSubTable from './FunctionSubTable';
+const confirm = Modal.confirm;
 class FunctionsList extends React.Component{
   constructor() {
     super();
@@ -10,9 +11,33 @@ class FunctionsList extends React.Component{
     };
   }
   componentDidMount() {
+    this.getNameSpaces()
+  }
+
+  getNameSpaces() {
     http.get('/namespace').then(r => {
       this.setState({namespaces: r.data});
     }).catch(e => {})
+  }
+
+  deleteNameSpace(id) {
+    return http.delete(`/namespace/${id}`).then(r => {
+      message.success("Deleted");
+      this.getNameSpaces();
+    }).catch(e => {})
+  }
+
+  showConfirm(id) {
+    let that = this;
+    confirm({
+      title: 'Do you want to delete this namespace?',
+      content: 'the functions in this namesapce will be deleted',
+      onOk() {
+        return that.deleteNameSpace(id)
+      },
+      onCancel() {
+      },
+    });
   }
 
   render() {
@@ -29,6 +54,7 @@ class FunctionsList extends React.Component{
             <Card
               title={<Card.Meta title={TitleComponent(data.name)} description={data.desc} />}
               key={data.id}
+              extra={<a style={{color: "red"}} onClick={this.showConfirm.bind(this, data.id)}>Delete</a>}
               style={{ marginBottom: 20 }}
             >
               <FunctionSubTable ns={data.id} />

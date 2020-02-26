@@ -124,6 +124,7 @@ class FunctionSteps extends React.Component {
         this.setState({needRedeploy: false});
       }
       let currentIndex = this.state.selectedIndex;
+      let selectedIndex = this.state.selectedIndex;
       for (let i = 0; i < originSteps.length; i++) {
         originSteps[i].status = 'finish';
         originSteps[i].available = true;
@@ -131,9 +132,9 @@ class FunctionSteps extends React.Component {
           if (i + 1 < originSteps.length && originSteps[i+1].key !== 'test') {
             originSteps[i+1].status = 'process';
             originSteps[i+1].available = true;
-            console.log(originSteps[i+1], this.state.selectedIndex);
-            if (this.state.selectedIndex === undefined) {
+            if (selectedIndex === undefined) {
               currentIndex = i + 1;
+              selectedIndex = i + 1
             } else {
               currentIndex = this.state.selectedIndex;
             }
@@ -166,6 +167,7 @@ class FunctionSteps extends React.Component {
         _private: !r.data.private,
         steps: originSteps,
         currentIndex: currentIndex,
+        selectedIndex: selectedIndex,
         completeStep: completeStep,
       })
     })

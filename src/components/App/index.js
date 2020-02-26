@@ -8,14 +8,17 @@ import User from '../Auth/User';
 import { getAuth } from '../../actions';
 import Dashboard from '../Dashboard';
 import Functions from '../Functions';
+import DataSource from "../DataSource";
 import FunctionSteps from '../Functions/FunctionSteps';
+import DataSourceEditor from '../DataSource/DataSourceEditor';
 const { Header, Content, Footer, Sider } = Layout;
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.menus = [
       {name: '仪表盘', key: 'dashboard', icon: 'compass' },
-      {name: '云函数', key: 'functions', icon: 'code-sandbox'}
+      {name: '云函数', key: 'functions', icon: 'code-sandbox'},
+      {name: '数据源', key: 'data-source', icon: 'database'}
     ];
     this.state = {
       currentMenu: this.menus.find(o => window.location.pathname.match(o.key)) || this.menus[0],
@@ -70,6 +73,9 @@ class App extends React.Component {
                     <Route exact path="/functions" component={Functions}/>
                     <Route exact path="/functions/create" component={FunctionSteps('create')} />
                     <Route exact path="/functions/:id" component={FunctionSteps('edit')} />
+                    <Route exact path="/data-source" component={DataSource}/>
+                    <Route exact path="/data-source/create" component={DataSourceEditor('create')}/>
+                    <Route exact path="/data-source/:id" component={DataSourceEditor('edit')}/>
                   </Switch>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>Fusion ©2019 Created by ZiqianCheng</Footer>

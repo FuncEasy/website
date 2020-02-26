@@ -188,6 +188,7 @@ class FunctionDeploy extends React.Component {
       this.clearTimer();
       this.props.refresh();
       this.props.setDeployStatus("process", false);
+      this.props.setTestStatus("wait");
       this.setState({
         retrying: false,
         needForceDeploy: false,
