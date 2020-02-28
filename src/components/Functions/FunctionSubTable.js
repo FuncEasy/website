@@ -1,5 +1,6 @@
 import React from 'react';
 import {message, Modal, Table, Tag} from "antd";
+import { withRouter } from 'react-router-dom'
 import http from '../../service';
 import StepsStatus from './StepsStatus';
 import LangTag from "./LangTag";
@@ -52,7 +53,7 @@ class FunctionSubTable extends React.Component{
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        render: (text, record) => <a onClick={() => window.location.href = `/functions/${record.id}`}>{text}</a>,
+        render: (text, record) => <a onClick={() => this.props.history.push(`/functions/${record.id}`)}>{text}</a>,
       },
       {
         title: 'Handler',
@@ -111,4 +112,4 @@ class FunctionSubTable extends React.Component{
   }
 }
 
-export default FunctionSubTable;
+export default withRouter(FunctionSubTable);

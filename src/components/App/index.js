@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Layout, Menu, Icon } from 'antd';
+import { Layout, Menu, Icon, Spin } from 'antd';
 import {BrowserRouter, Route, Redirect, Switch, Link} from 'react-router-dom';
 import './app.less';
 import Login from '../Auth/Login';
@@ -10,6 +10,8 @@ import Dashboard from '../Dashboard';
 import Functions from '../Functions';
 import DataSource from "../DataSource";
 import Token from "../Functions/Token";
+import Template from "../Template";
+import TemplateEditor from "../Template/TemplateEditor";
 import FunctionSteps from '../Functions/FunctionSteps';
 import DataSourceEditor from '../DataSource/DataSourceEditor';
 const { Header, Content, Footer, Sider } = Layout;
@@ -20,6 +22,7 @@ class App extends React.Component {
       {name: '仪表盘', key: 'dashboard', icon: 'compass' },
       {name: '云函数', key: 'functions', icon: 'code-sandbox'},
       {name: '数据源', key: 'data-source', icon: 'database'},
+      {name: '函数模版', key: 'template', icon: 'switcher'},
       {name: 'Function Token', key: 'token', icon: 'key'}
     ];
     this.state = {
@@ -48,7 +51,12 @@ class App extends React.Component {
     return (
       <BrowserRouter>
         {
-          this.props.auth.data && this.props.status !== 'Fail' ?
+          this.props.auth.status === 'Pending'
+          && <Spin style={{ position: "fixed", right: 10, top: 10 }} indicator={<Icon type="loading" />} />
+        }
+        {
+          this.props.auth.status === 'Success'
+          &&
             <Layout style={{minHeight: '100%'}}>
               <Sider>
                 <div className="logo" align="center">
@@ -78,13 +86,18 @@ class App extends React.Component {
                     <Route exact path="/data-source" component={DataSource}/>
                     <Route exact path="/data-source/create" component={DataSourceEditor('create')}/>
                     <Route exact path="/data-source/:id" component={DataSourceEditor('edit')}/>
+                    <Route exact path="/template" component={Template} />
+                    <Route exact path="/template/create" component={TemplateEditor('create')} />
+                    <Route exact path="/template/:id" component={TemplateEditor('edit')} />
                     <Route exact path="/token" component={Token}/>
                   </Switch>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>Fusion ©2019 Created by ZiqianCheng</Footer>
               </Layout>
             </Layout>
-            : <Login/>
+        }
+        {
+          this.props.auth.status === "Fail" && <Login/>
         }
       </BrowserRouter>
     )

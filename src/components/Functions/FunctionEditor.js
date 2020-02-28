@@ -4,13 +4,6 @@ import http from "../../service";
 import LangTag from "./LangTag";
 import CodePreview from "./CodePreview";
 import CodeEditor from "./CodeEditor";
-const langMap = {
-  'nodeJS': 'javascript',
-  'PHP': 'php',
-  'Java': 'java',
-  'Go': 'golang',
-  'JSON': 'josn',
-};
 class FunctionEditor extends React.Component {
   constructor(props) {
     super(props);
@@ -196,7 +189,7 @@ class FunctionEditor extends React.Component {
             <Spin spinning={this.state.loading}>
               <LangTag runtime={runtime} />
               <span style={{ fontSize: 20 }}>{`Handler: ${handler}`}</span>
-              <CodePreview code={script} language={langMap[runtime.lang]}/>
+              <CodePreview code={script} language={runtime.lang}/>
             </Spin>
           )
         } else {
@@ -240,7 +233,7 @@ class FunctionEditor extends React.Component {
               ? `${this.props.moduleName}.${this.props.runtime.suffix}`
               : this.props.runtime.depsName
           }
-          lang={langMap[this.props.runtime.lang]}
+          lang={this.props.runtime.lang}
           refresh={this.props.refresh}
           getFileData={this.getFileData.bind(this)}
         />

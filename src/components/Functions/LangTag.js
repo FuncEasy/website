@@ -5,13 +5,13 @@ class LangTag extends React.Component {
     super(props);
   }
   render() {
-    switch (this.props.runtime.lang) {
+    switch (this.props.runtime.name) {
       case 'nodeJS':
-        return <Tag color="green">{`${this.props.runtime.lang}:${this.props.runtime.version}`}</Tag>;
+        return <Tag color="green">{`${this.props.runtime.name}:${this.props.runtime.version}`}</Tag>;
       case 'Go':
-        return <Tag color="blue">{`${this.props.runtime.lang}:${this.props.runtime.version}`}</Tag>;
+        return <Tag color="blue">{`${this.props.runtime.name}:${this.props.runtime.version}`}</Tag>;
       case 'Java':
-        return <Tag color="red">{`${this.props.runtime.lang}:${this.props.runtime.version}`}</Tag>;
+        return <Tag color="red">{`${this.props.runtime.name}:${this.props.runtime.version}`}</Tag>;
       default:
         return
     }

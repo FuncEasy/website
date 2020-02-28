@@ -15,11 +15,13 @@ class FunctionTest extends React.Component {
       getPayload: '{\n\t"params": {\n\t\t"param1": "data1",\n\t\t"param2": "data2"\n\t}\n}',
       postPayload: '{\n\t"field1": "data1",\n\t"field2": "data2"\n}',
       respond: '{\n\t//Respond here\n}',
-      trigger: `call/${this.props.auth.data.username}/${this.props.nsName}/${this.props.funcName}/${this.props.version}`
+      trigger: `call/${this.props.auth.data.username}/${this.props.nsName}/${this.props.funcName}/${this.props.version}`,
+      loading: false,
     }
   }
 
   functionCall() {
+    this.setState({loading: true});
     if (this.state.method === "get") {
       let data = {};
       try {
@@ -32,9 +34,15 @@ class FunctionTest extends React.Component {
         try {
           resData = JSON.parse(resData)
         } catch (e) {}
-        this.setState({respond: JSON.stringify({data: resData}, null, 2)})
+        this.setState({
+          respond: JSON.stringify({data: resData}, null, 2),
+          loading: false
+        })
       }).catch(e => {
-        this.setState({respond: e.response.data ? e.response.data.err : JSON.stringify(e.response)})
+        this.setState({
+          respond: e.response.data ? e.response.data.err || 'unknown error' : JSON.stringify(e.response) || 'unknown error',
+          loading: false
+        })
       })
     }
     if (this.state.method === "post") {
@@ -49,9 +57,16 @@ class FunctionTest extends React.Component {
         try {
           resData = JSON.parse(resData)
         } catch (e) {}
-        this.setState({respond: JSON.stringify({data: resData}, null, 2)})
+        this.setState({
+          respond: JSON.stringify({data: resData}, null, 2),
+          loading: false
+        })
       }).catch(e => {
-        this.setState({respond: e.response.data ? e.response.data.err : JSON.stringify(e.response)})
+        console.log(e)
+        this.setState({
+          respond: e.response.data ? e.response.data.err || 'unknown error' : JSON.stringify(e.response) || 'unknown error',
+          loading: false
+        })
       })
     }
   }
@@ -68,7 +83,7 @@ class FunctionTest extends React.Component {
             <Radio value="get">GET</Radio>
             <Radio value="post">POST</Radio>
           </Radio.Group>
-          <Button type="primary" onClick={this.functionCall.bind(this)}>Send</Button>
+          <Button type="primary" onClick={this.functionCall.bind(this)} loading={this.state.loading}>Send</Button>
           <div style={{overflow: 'hidden'}}>
             <div style={{ marginTop: 20, float: 'left', width: '40%' }}>
               <h3>Request Payload:</h3>
@@ -99,7 +114,7 @@ class FunctionTest extends React.Component {
                 }}
               />
             </div>
-            <div style={{ marginTop: 20, marginLeft: '50%'}}>
+            <div style={{ marginTop: 20, marginLeft: '45%'}}>
               <h3>Respond:</h3>
               <div style={{  height: 500, overflow: 'scroll' }}>
                 <CodePreview code={this.state.respond} language="json"/>

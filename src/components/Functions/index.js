@@ -8,7 +8,7 @@ class Index extends React.Component{
     return (
       <div>
         <CreateNamespace/>
-        <Button type="primary" onClick={() => window.location.href = '/functions/create'}>新建云函数</Button>
+        <Button type="primary" onClick={() => this.props.history.push('/functions/create')}>新建云函数</Button>
         <div style={{ marginBottom: 20 }}/>
         <FunctionsList/>
       </div>

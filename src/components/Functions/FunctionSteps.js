@@ -11,49 +11,49 @@ import {
   InputNumber,
   Switch,
   Button,
-  message, Alert,
+  message, Alert, Tag,
 } from "antd";
 import http from '../../service';
 import FunctionScript from "./FunctionScript";
 import FunctionDeploy from "./FunctionDeploy";
 import FunctionTest from "./FunctionTest";
-import { withRouter } from 'react-router-dom'
+import LangTag from "./LangTag";
+import { withRouter } from 'react-router-dom';
 const { Step } = Steps;
 const { Option } = Select;
-
-const originSteps = [
-  {
-    key: 'basic',
-    title: 'Basic',
-    description: '基本信息',
-    status: 'process',
-    available: true,
-  },
-  {
-    key: 'uploaded',
-    title: 'Function',
-    description: '函数配置',
-    status: 'wait',
-    available: false,
-  },
-  {
-    key: 'deployed',
-    title: 'Deploy',
-    description: '函数部署',
-    status: 'wait',
-    available: false,
-  },
-  {
-    key: 'test',
-    title: 'Test',
-    description: '函数测试',
-    status: 'wait',
-    available: false,
-  },
-];
 class FunctionSteps extends React.Component {
   constructor(props) {
     super(props);
+    this.originSteps = [
+      {
+        key: 'basic',
+        title: 'Basic',
+        description: '基本信息',
+        status: 'process',
+        available: true,
+      },
+      {
+        key: 'uploaded',
+        title: 'Function',
+        description: '函数配置',
+        status: 'wait',
+        available: false,
+      },
+      {
+        key: 'deployed',
+        title: 'Deploy',
+        description: '函数部署',
+        status: 'wait',
+        available: false,
+      },
+      {
+        key: 'test',
+        title: 'Test',
+        description: '函数测试',
+        status: 'wait',
+        available: false,
+      },
+    ];
     this.state = {
       id: '',
       nameSpaceList: [],
@@ -66,6 +66,10 @@ class FunctionSteps extends React.Component {
       nameSpaceObj: {},
       dataSourceList: [],
       dataSource_id: undefined,
+      templateList: [],
+      selectedTemplateId: undefined,
+      templateObj: {},
+      template_loading: false,
       data_source_loading: false,
       name: '',
       moduleName: '',
@@ -75,10 +79,10 @@ class FunctionSteps extends React.Component {
       timeout: '',
       size: 1,
       deps: '',
-      _private: '',
+      _private: 0,
       version: '',
       type: this.props.type,
-      steps: originSteps,
+      steps: this.originSteps,
       currentStep: 'basic',
       currentIndex: 0,
       completeStep: '',
@@ -112,7 +116,7 @@ class FunctionSteps extends React.Component {
       if (completeStep === 'redeploy') {
         this.setState({needRedeploy: true});
         completeStep = 'uploaded';
-        originSteps[2] = {
+        this.originSteps[2] = {
           key: 'deployed',
           title: 'Redeploy',
           description: '重新部署',
@@ -125,13 +129,13 @@ class FunctionSteps extends React.Component {
       }
       let currentIndex = this.state.selectedIndex;
       let selectedIndex = this.state.selectedIndex;
-      for (let i = 0; i < originSteps.length; i++) {
-        originSteps[i].status = 'finish';
-        originSteps[i].available = true;
-        if (originSteps[i].key === completeStep) {
-          if (i + 1 < originSteps.length && originSteps[i+1].key !== 'test') {
-            originSteps[i+1].status = 'process';
-            originSteps[i+1].available = true;
+      for (let i = 0; i < this.originSteps.length; i++) {
+        this.originSteps[i].status = 'finish';
+        this.originSteps[i].available = true;
+        if (this.originSteps[i].key === completeStep) {
+          if (i + 1 < this.originSteps.length && this.originSteps[i+1].key !== 'test') {
+            this.originSteps[i+1].status = 'process';
+            this.originSteps[i+1].available = true;
             if (selectedIndex === undefined) {
               currentIndex = i + 1;
               selectedIndex = i + 1
@@ -164,8 +168,8 @@ class FunctionSteps extends React.Component {
         dataSource_id: r.data.DataSourceId,
         timeout: +r.data.timeout,
         size: +r.data.size,
-        _private: !r.data.private,
-        steps: originSteps,
+        _private: !!r.data.private,
+        steps: this.originSteps,
         currentIndex: currentIndex,
         selectedIndex: selectedIndex,
         completeStep: completeStep,
@@ -181,9 +185,11 @@ class FunctionSteps extends React.Component {
       runtime_id: this.state.runtime_id,
       ns_id: this.state.namespace_id,
       handler: `${this.state.moduleName}.${this.state.funcName}`,
+      private: +this.state._private,
       data_source_id: this.state.dataSource_id,
       timeout: this.state.timeout + '',
       size: +this.state.size,
+      template: this.state.templateObj
     }).then(r => {
       this.props.history.push(`/functions/${r.data.id}`)
     }).catch()
@@ -197,6 +203,7 @@ class FunctionSteps extends React.Component {
       version: this.state.version,
       runtime_id: this.state.runtime_id,
       ns_id: this.state.namespace_id,
+      private: +this.state._private,
       handler: `${this.state.moduleName}.${this.state.funcName}`,
       data_source_id: this.state.dataSource_id,
       timeout: this.state.timeout + '',
@@ -213,6 +220,40 @@ class FunctionSteps extends React.Component {
         currentIndex: index,
         selectedIndex: index,
       })
+    }
+  }
+
+  selectRuntime(id) {
+    if (this.props.type === "create") {
+      this.setState({runtime_id: id, template_loading: true});
+      http.get(`/template/available/${id}`).then(r => {
+        this.setState({templateList: r.data, template_loading: false})
+      }).catch(e => this.setState({template_loading: false}))
+    }
+  }
+
+  selectTemplate(id, template) {
+    if (this.props.type === "create") {
+      let handler = template.handler;
+      let regx = /^([-\w]+).([-\w]+)$/;
+      let res = handler.match(regx);
+      this.setState({
+        selectedTemplateId: id,
+        templateObj: template,
+        moduleName: res[1],
+        funcName: res[2],
+      });
+    }
+  }
+
+  TemplateTag(type) {
+    switch (type) {
+      case 'preset':
+        return <Tag color="cyan">Preset</Tag>;
+      case 'my':
+        return <Tag color="green">Own</Tag>;
+      default:
+        return <Tag color="blue">Public</Tag>
     }
   }
 
@@ -242,11 +283,14 @@ class FunctionSteps extends React.Component {
       ...commonStyle,
     };
     let containerStyle = {
+      background: '#fff',
+      borderRadius: 6,
+      marginBottom: 20,
+    };
+    let listStyle = {
       minHeight: 200,
       maxHeight: 500,
       overflow: 'scroll',
-      background: '#fff',
-      borderRadius: 6,
     };
     return (
       <div style={containerStyle}>
@@ -256,18 +300,91 @@ class FunctionSteps extends React.Component {
           indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />}
           spinning={this.state.runtime_loading}
         >
-          <Row gutter={16}>
+          <Row gutter={16} style={listStyle}>
             {
               this.state.runtimeList.map((item, index) => (
                 <Col key={index} span={8} style={{ marginTop: 10, ...centerStyle }}>
                   <div
                     align="center"
                     style={this.state.runtime_id === item.id ? activeStyle : defaultStyle}
-                    onClick={this.props.type === "create" ? () => this.setState({runtime_id: item.id}) : null}
+                    onClick={this.selectRuntime.bind(this, item.id)}
                   >
                     <div>
-                      <div style={{ fontSize: 24 }}>{item.lang}</div>
+                      <div style={{ fontSize: 24 }}>{item.name}</div>
                       <div>{`version: ${item.version}`}</div>
+                    </div>
+                  </div>
+                </Col>
+              ))
+            }
+          </Row>
+        </Spin>
+      </div>
+    )
+  }
+
+  TemplateList() {
+    let centerStyle = {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    };
+    let commonStyle = {
+      width: '90%',
+      height: 100,
+      cursor: this.props.type === 'create' ? 'pointer' : 'not-allowed',
+      borderRadius: 6,
+      position: 'relative',
+      ...centerStyle,
+    };
+    let activeStyle = {
+      color: '#1890ff',
+      background: '#fff',
+      borderColor: '#1890ff',
+      border: '1px solid',
+      ...commonStyle,
+    };
+    let defaultStyle = {
+      background: '#fff',
+      border: '1px solid #d9d9d9',
+      ...commonStyle,
+    };
+    let containerStyle = {
+      background: '#fff',
+      borderRadius: 6,
+    };
+    let listStyle = {
+      minHeight: 200,
+      maxHeight: 500,
+      overflow: 'scroll',
+    };
+    return (
+      <div style={containerStyle}>
+        <div style={{ fontSize: 20, textAlign: "center" }}>
+          <span>Function Template</span>
+        </div>
+        <Divider dashed={true} style={{ margin: '2px 0px' }}/>
+        <Spin
+          indicator={<Icon type="loading" style={{ fontSize: 24 }} spin />}
+          spinning={this.state.template_loading}
+        >
+          <Row gutter={16} style={listStyle}>
+            {
+              this.state.templateList.length === 0
+              && <h3 style={{ marginTop: 10, ...centerStyle}}>Select Your Runtime</h3>
+            }
+            {
+              this.state.templateList.map((item, index) => (
+                <Col key={index} span={24} style={{ marginTop: 10, ...centerStyle }}>
+                  <div
+                    align="center"
+                    style={this.state.selectedTemplateId === item.id ? activeStyle : defaultStyle}
+                    onClick={this.selectTemplate.bind(this, item.id, item)}
+                  >
+                    <div style={{ position: 'absolute', left: 5, top: 5 }}>{this.TemplateTag(item.tag)}</div>
+                    <div>
+                      <div style={{ fontSize: 24 }}>{item.name}</div>
+                      <div>{item.desc || ''}</div>
                     </div>
                   </div>
                 </Col>
@@ -313,6 +430,7 @@ class FunctionSteps extends React.Component {
       <Row gutter={32}>
         <Col span={10}>
           {this.RuntimeList()}
+          {this.props.type === 'create' && this.TemplateList()}
         </Col>
         <Col span={14}>
           <div style={{ marginBottom: 20 }}>
@@ -382,7 +500,7 @@ class FunctionSteps extends React.Component {
           </div>
           <div style={{ marginBottom: 20 }}>
             <span style={{ paddingRight: 10 }}>Function Private</span>
-            <Switch value={this.state._private} onChange={v => this.setState({_private: v})} />
+            <Switch defaultChecked={false} checked={this.state._private} onChange={v => this.setState({_private: v})} />
           </div>
           <div style={{ marginBottom: 20 }}>
             <Button

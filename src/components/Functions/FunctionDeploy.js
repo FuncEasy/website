@@ -170,6 +170,7 @@ class FunctionDeploy extends React.Component {
     http.get(`/function/redeploy/${this.props.id}`).then(r => {
       message.info("start redeploying...");
       this.props.refresh();
+      this.props.setTestStatus("wait");
       this.setState({
         deploying: true,
         needForceDeploy: false,
