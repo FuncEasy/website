@@ -1,5 +1,5 @@
 import React from "react";
-import {Button, Input, message, Radio} from "antd";
+import {Button, Input, message, Radio, Spin, Icon, InputNumber} from "antd";
 import AceEditor from "react-ace";
 import CodePreview from "./CodePreview";
 import "ace-builds/src-noconflict/mode-json"
@@ -17,7 +17,26 @@ class FunctionTest extends React.Component {
       respond: '{\n\t//Respond here\n}',
       trigger: `call/${this.props.auth.data.username}/${this.props.nsName}/${this.props.funcName}/${this.props.version}`,
       loading: false,
+      logs: '',
+      log_loading: false,
+      lines: 20
     }
+  }
+
+  componentDidMount() {
+    this.getLogs()
+  }
+
+  getLogs() {
+    this.setState({log_loading: true});
+    http.get(`/function/logs/${this.props.id}`, {
+      params: {
+        lines: this.state.lines
+      }
+    }).then(r => {
+      this.setState({logs: r.data.logs, log_loading: false});
+      this.LogElement.scrollTop = this.LogElement.scrollHeight;
+    }).catch(e => this.setState({log_loading: false}))
   }
 
   functionCall() {
@@ -78,7 +97,7 @@ class FunctionTest extends React.Component {
           <h2>HTTP Trigger</h2>
           <Input value={this.state.trigger} disabled={true}/>
         </div>
-        <div>
+        <div style={{ marginBottom: 20 }}>
           <Radio.Group onChange={e => this.setState({method: e.target.value})} value={this.state.method}>
             <Radio value="get">GET</Radio>
             <Radio value="post">POST</Radio>
@@ -90,6 +109,7 @@ class FunctionTest extends React.Component {
               <AceEditor
                 style={{
                   width: '100%',
+                  height: 300,
                 }}
                 onChange={
                   v => this.state.method === 'get'
@@ -116,10 +136,27 @@ class FunctionTest extends React.Component {
             </div>
             <div style={{ marginTop: 20, marginLeft: '45%'}}>
               <h3>Respond:</h3>
-              <div style={{  height: 500, overflow: 'scroll' }}>
+              <div style={{  height: 300, overflow: 'scroll' }}>
                 <CodePreview code={this.state.respond} language="json"/>
               </div>
             </div>
+          </div>
+        </div>
+        <div>
+          <div style={{ marginBottom: 10 }}>
+            <h2 style={{ fontSize: 20, paddingRight: 10}}>Logs:</h2>
+            <span style={{ paddingRight: 5 }}>Lines:</span>
+            <InputNumber
+              onChange={v => this.setState({lines: v})}
+              value={this.state.lines}
+              style={{ marginRight:10 }}
+            />
+            <Button type="primary" onClick={this.getLogs.bind(this)} loading={this.state.log_loading}>Sync</Button>
+          </div>
+          <div ref={ref => this.LogElement = ref} style={{  maxHeight: 300, overflow: 'scroll' }}>
+            <Spin spinning={this.state.log_loading} indicator={<Icon type="loading" />}>
+              <CodePreview code={this.state.logs} language="prolog" dark/>
+            </Spin>
           </div>
         </div>
       </div>

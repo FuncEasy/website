@@ -17,7 +17,6 @@ import http from '../../service';
 import FunctionScript from "./FunctionScript";
 import FunctionDeploy from "./FunctionDeploy";
 import FunctionTest from "./FunctionTest";
-import LangTag from "./LangTag";
 import { withRouter } from 'react-router-dom';
 const { Step } = Steps;
 const { Option } = Select;
@@ -547,6 +546,7 @@ class FunctionSteps extends React.Component {
   TestRender() {
     return (
       <FunctionTest
+        id={this.state.id}
         nsName={this.state.nameSpaceObj.name}
         funcName={this.state.name}
         version={this.state.version}
