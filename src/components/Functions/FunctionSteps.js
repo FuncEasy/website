@@ -500,7 +500,7 @@ class FunctionSteps extends React.Component {
           </div>
           <div style={{ marginBottom: 20 }}>
             <span style={{ paddingRight: 10 }}>Function Private</span>
-            <Switch defaultChecked={false} checked={this.state._private} onChange={v => this.setState({_private: v})} />
+            <Switch defaultChecked={false} checked={!!this.state._private} onChange={v => this.setState({_private: v})} />
           </div>
           <div style={{ marginBottom: 20 }}>
             <Button

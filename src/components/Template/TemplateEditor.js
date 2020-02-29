@@ -3,13 +3,13 @@ import {withRouter} from "react-router-dom";
 import {Card, Input, Select, Checkbox, Switch, Button, message} from "antd";
 import AceEditor from "react-ace";
 import http from "../../service";
-import "ace-builds/src-noconflict/ace"
-import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-min-noconflict/ext-language_tools"
+import "ace-builds/src-min-noconflict/mode-javascript";
 import "ace-builds/src-min-noconflict/mode-php";
 import "ace-builds/src-min-noconflict/mode-golang";
 import "ace-builds/src-min-noconflict/mode-java";
 import "ace-builds/src-min-noconflict/mode-json";
-import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-min-noconflict/theme-monokai";
 const Option = Select.Option;
 class TemplateEditor extends React.Component {
   constructor(props) {
@@ -169,7 +169,7 @@ class TemplateEditor extends React.Component {
                       value={this.state.template}
                       placeholder="// write template here"
                       mode={this.state.selectRuntime.lang}
-                      theme="monokai"
+                      theme="script-editor"
                       name="blah2"
                       fontSize={14}
                       showPrintMargin={true}
@@ -178,7 +178,7 @@ class TemplateEditor extends React.Component {
                       setOptions={{
                         enableBasicAutocompletion: true,
                         enableLiveAutocompletion: true,
-                        enableSnippets: false,
+                        enableSnippets: true,
                         showLineNumbers: true,
                         tabSize: 2,
                         useWorker: false,
@@ -204,7 +204,7 @@ class TemplateEditor extends React.Component {
                       placeholder="// write dependencies file here"
                       mode={this.state.selectRuntime.depsLang}
                       theme="monokai"
-                      name="blah2"
+                      name="deps-editor"
                       fontSize={14}
                       showPrintMargin={true}
                       showGutter={true}
@@ -212,7 +212,7 @@ class TemplateEditor extends React.Component {
                       setOptions={{
                         enableBasicAutocompletion: true,
                         enableLiveAutocompletion: true,
-                        enableSnippets: false,
+                        enableSnippets: true,
                         showLineNumbers: true,
                         tabSize: 2,
                         useWorker: false,

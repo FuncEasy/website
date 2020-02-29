@@ -2,12 +2,13 @@ import React from "react";
 import AceEditor from "react-ace";
 import {Select, Alert, Divider, message, Icon, Button} from "antd";
 import http from '../../service';
-import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-min-noconflict/ext-language_tools"
+import "ace-builds/src-min-noconflict/mode-javascript";
 import "ace-builds/src-min-noconflict/mode-php";
 import "ace-builds/src-min-noconflict/mode-golang";
 import "ace-builds/src-min-noconflict/mode-java";
 import "ace-builds/src-min-noconflict/mode-json";
-import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-min-noconflict/theme-monokai";
 
 const { Option } = Select;
 class CodeEditor extends React.Component {
@@ -53,7 +54,6 @@ class CodeEditor extends React.Component {
         }
       } else {
         setTimeout(() => this.setState({autoSave: false}), 500);
-        message.info("Unchanged")
       }
     }, 10 * 1000)
   }
@@ -146,7 +146,7 @@ class CodeEditor extends React.Component {
           placeholder="Placeholder Text"
           mode={this.state.lang}
           theme="monokai"
-          name="blah2"
+          name="code-editor"
           fontSize={14}
           showPrintMargin={true}
           showGutter={true}
@@ -154,11 +154,16 @@ class CodeEditor extends React.Component {
           setOptions={{
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true,
-            enableSnippets: false,
+            enableSnippets: true,
             showLineNumbers: true,
             tabSize: 2,
             useWorker: false,
           }}
+          commands={[{
+            name: 'SaveCode',
+            bindKey: {win: 'Ctrl-s', mac: 'Command-s'},
+            exec: this.save.bind(this)
+          }]}
         />
       </div>
     )
