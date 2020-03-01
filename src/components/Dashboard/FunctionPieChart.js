@@ -1,6 +1,7 @@
 import React from "react";
 import { Pie } from 'ant-design-pro/lib/Charts';
 import http from "../../service";
+import {Empty} from "antd";
 class FunctionPieChart extends React.Component {
   constructor(props) {
     super(props);
@@ -76,13 +77,14 @@ class FunctionPieChart extends React.Component {
 
   render() {
     return (
-      <Pie
-        animate={true}
-        hasLegend
-        height={200}
-        subTitle="Functions Status"
-        data={this.state.data}
-      />
+      this.props.functions.length > 0
+        ? <Pie
+          animate={true}
+          height={200}
+          subTitle="Functions Status"
+          data={this.state.data}
+        />
+        : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
     )
   }
 }

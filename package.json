@@ -8,6 +8,7 @@
     "antd": "^3.24.2",
     "axios": "^0.19.2",
     "babel-plugin-import": "^1.12.2",
+    "bizcharts": "^3.5.7",
     "customize-cra": "^0.8.0",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",

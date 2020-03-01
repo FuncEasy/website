@@ -1,7 +1,7 @@
 import React from "react";
 import { Pie } from 'ant-design-pro/lib/Charts';
 import {Empty} from "antd";
-class NameSpacePieChart extends React.Component {
+class DataSourcePieChart extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -10,7 +10,7 @@ class NameSpacePieChart extends React.Component {
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
-    let data = nextProps.ns.map(item => ({
+    let data = nextProps.ds.map(item => ({
       x: item.name,
       y: item.Functions.length
     }));
@@ -19,11 +19,11 @@ class NameSpacePieChart extends React.Component {
 
   render() {
     return (
-      this.props.ns.length > 0
+      this.props.ds.length > 0
         ? <Pie
           animate={true}
           height={200}
-          subTitle="NameSpaces"
+          subTitle="Data Source"
           data={this.state.data}
         />
         : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -31,4 +31,4 @@ class NameSpacePieChart extends React.Component {
   }
 }
 
-export default NameSpacePieChart
+export default DataSourcePieChart

@@ -1,7 +1,14 @@
 import React from "react";
 import http from '../../service';
-import {Col, Row, Select, Radio} from "antd";
-import { ChartCard, Bar } from "ant-design-pro/lib/Charts"
+import {Col, Row, Select, Radio, Empty} from "antd";
+import {ChartCard, Pie} from "ant-design-pro/lib/Charts"
+import {
+  Chart,
+  Geom,
+  Axis,
+  Tooltip,
+  Legend,
+} from "bizcharts";
 const Option = Select.Option;
 class FunctionReport extends React.Component {
   constructor(props) {
@@ -9,12 +16,12 @@ class FunctionReport extends React.Component {
     this.state = {
       index: 0,
       type: 'days',
-      daysInvokeSuccessReport: [],
-      daysInvokeFailedReport: [],
+      daysInvokeReport: [],
+      daysInvokeSumReport: [],
       daysSpeedReport: [],
-      weeksInvokeSuccessReport: [],
-      weeksInvokeFailedReport: [],
       weeksSpeedReport: [],
+      weeksInvokeReport: [],
+      weeksInvokeSumReport: [],
     }
   }
 
@@ -30,38 +37,60 @@ class FunctionReport extends React.Component {
       let daysSpeedReportDate = r.data.daysReport.daysSpeedReports;
       let weeksInvokeReportData = r.data.weeksReport.weeksInvokeReports;
       let weeksSpeedReportData = r.data.weeksReport.weeksSpeedReports;
-      let daysInvokeSuccessReport = daysInvokeReportData.map(item => ({
-        x: item.date,
-        y: item.successCount,
-      }));
-      let daysInvokeFailedReport = daysInvokeReportData.map(item => ({
-        x: item.date,
-        y: item.failCount,
-      }));
+
+      let daysInvokeReport = [];
+      let daysInvokeSumReport = [];
+      daysInvokeReportData.forEach(item => {
+        daysInvokeReport.push({
+          range: item.date,
+          type: 'success',
+          value: item.successCount,
+        });
+        daysInvokeReport.push({
+          range: item.date,
+          type: 'fail',
+          value: item.failCount,
+        });
+        daysInvokeSumReport.push({
+          range: item.date,
+          counts: item.successCount + item.failCount
+        })
+      });
       let daysSpeedReport = daysSpeedReportDate.map(item => ({
-        x: item.date,
-        y: item.averageSpeed,
+        range: item.date,
+        speed: item.averageSpeed === 0 ? 0 : item.averageSpeed.toFixed(1),
       }));
-      let weeksInvokeSuccessReport = weeksInvokeReportData.map(item => ({
-        x: item.week,
-        y: item.sumSuccess,
-      }));
-      let weeksInvokeFailedReport = weeksInvokeReportData.map(item => ({
-        x: item.week,
-        y: item.sumFail,
-      }));
+
+      let weeksInvokeReport = [];
+      let weeksInvokeSumReport = [];
+      weeksInvokeReportData.forEach(item => {
+        weeksInvokeReport.push({
+          range: item.week,
+          type: 'success',
+          value: item.sumSuccess,
+        });
+        weeksInvokeReport.push({
+          range: item.week,
+          type: 'fail',
+          value: item.sumFail,
+        });
+        weeksInvokeSumReport.push({
+          range: item.week,
+          counts: item.sumSuccess + item.sumFail
+        })
+      });
       let weeksSpeedReport = weeksSpeedReportData.map(item => ({
-        x: item.week,
-        y: item.averageSpeed,
+        range: item.week,
+        speed: item.averageSpeed === 0 ? 0 : item.averageSpeed.toFixed(1),
       }));
       this.setState({
         index,
-        daysInvokeSuccessReport,
-        daysInvokeFailedReport,
+        daysInvokeReport,
+        daysInvokeSumReport,
         daysSpeedReport,
-        weeksInvokeSuccessReport,
-        weeksInvokeFailedReport,
-        weeksSpeedReport
+        weeksSpeedReport,
+        weeksInvokeReport,
+        weeksInvokeSumReport,
       })
     })
   }
@@ -74,6 +103,10 @@ class FunctionReport extends React.Component {
     let currentName = this.props.functions.length > 0
       ? this.props.functions[this.state.index].name
       : '';
+    let InvokeColorMap = {
+      "success": "rgb(47, 194, 91)",
+      "fail": "rgb(240, 72, 100)"
+    };
     return (
       <div>
         <ChartCard
@@ -103,29 +136,94 @@ class FunctionReport extends React.Component {
             </div>
           }
         >
-          <Row gutter={16}>
-            <Col span={8}>
-              <Bar title="Invoke Success" height={200} data={
-                this.state.type === 'days'
-                  ? this.state.daysInvokeSuccessReport
-                  : this.state.weeksInvokeSuccessReport
-              }/>
-            </Col>
-            <Col span={8}>
-              <Bar color="red" title="Invoke Fail" height={200} data={
-                this.state.type === 'days'
-                  ? this.state.daysInvokeFailedReport
-                  : this.state.weeksInvokeFailedReport
-              }/>
-            </Col>
-            <Col span={8}>
-              <Bar color="green" title="Average Speed" height={200} data={
-                this.state.type === 'days'
-                  ? this.state.daysSpeedReport
-                  : this.state.weeksSpeedReport
-              }/>
-            </Col>
-          </Row>
+          {
+            this.props.functions.length > 0
+              ? <Row gutter={16}>
+                <Col span={8}>
+                  <h3>Invoke Status</h3>
+                  <Chart
+                    data={
+                      this.state.type === 'days'
+                        ? this.state.daysInvokeReport
+                        :this.state.weeksInvokeReport
+                    }
+                    height={300}
+                    forceFit
+                  >
+                    <Axis name="range" />
+                    <Axis name="value" position="left"/>
+                    <Tooltip />
+                    <Legend />
+                    <Geom
+                      type="intervalStack"
+                      position="range*value"
+                      shape="smooth"
+                      color={['type', t => InvokeColorMap[t]]}
+                      opacity={0.8}
+                    />
+                  </Chart>
+                </Col>
+                <Col span={8}>
+                  <h3>Invoke Counts</h3>
+                  <Chart
+                    data={
+                      this.state.type === 'days'
+                        ? this.state.daysInvokeSumReport
+                        : this.state.weeksInvokeSumReport
+                    }
+                    height={300}
+                    forceFit
+                  >
+                    <Axis name="range" />
+                    <Axis name="counts" position="left"/>
+                    <Tooltip />
+                    <Legend />
+                    <Geom type="area" position="range*counts" color="rgb(24, 144, 255)" shape="smooth" />
+                    <Geom
+                      type="line"
+                      position="range*counts"
+                      color="rgb(24, 144, 255)"
+                      shape="smooth"
+                      size={2}
+                    />
+                  </Chart>
+                </Col>
+                <Col span={8}>
+                  <h3>Speed</h3>
+                  <Chart
+                    data={
+                      this.state.type === 'days'
+                        ? this.state.daysSpeedReport
+                        : this.state.weeksSpeedReport
+                    }
+                    height={300}
+                    forceFit
+                  >
+                    <Axis name="range" />
+                    <Axis
+                      name="speed"
+                      position="left"
+                      label={{formatter: val => `${val}ms`}}
+                    />
+                    <Tooltip />
+                    <Legend />
+                    <Geom type="line" position="range*speed" color="#ff8a65" size={2} shape="smooth" />
+                    <Geom
+                      type="point"
+                      color="#ff8a65"
+                      position="range*speed"
+                      shape="smooth"
+                      style={{
+                        fill: "#ff8a65",
+                        stroke: "#fff",
+                        lineWidth: 1
+                      }}
+                    />
+                  </Chart>
+                </Col>
+              </Row>
+              : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          }
         </ChartCard>
       </div>
     )

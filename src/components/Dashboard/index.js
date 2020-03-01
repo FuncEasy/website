@@ -6,12 +6,14 @@ import { ChartCard } from "ant-design-pro/lib/Charts";
 import 'ant-design-pro/dist/ant-design-pro.css';
 import http from "../../service";
 import {Col, Row} from "antd";
+import DataSourcePieChart from "./DataSourcePieChart";
 class Index extends React.Component{
   constructor(props) {
     super(props);
     this.state = {
       namespaces: [],
       functions: [],
+      dataSources: [],
     }
   }
 
@@ -26,7 +28,10 @@ class Index extends React.Component{
         functions.push(...item.Functions)
       });
       this.setState({namespaces: r.data, functions});
-    }).catch(e => {})
+    }).catch(e => {});
+    http.get('/dataSource').then(r => {
+      this.setState({dataSources: r.data})
+    })
   }
 
   render() {
@@ -34,13 +39,18 @@ class Index extends React.Component{
       <div>
         <div>
           <Row gutter={16} style={{ marginBottom: 20 }}>
-            <Col span={12}>
-              <ChartCard title="NameSpaces" total={this.state.namespaces.length}>
+            <Col span={8}>
+              <ChartCard title="NameSpaces" total={this.state.namespaces.length} style={{ height: 300 }}>
                 <NameSpacePieChart ns={this.state.namespaces}/>
               </ChartCard>
             </Col>
-            <Col span={12}>
-              <ChartCard title="Functions" total={this.state.functions.length}>
+            <Col span={8}>
+              <ChartCard title="DataSources" total={this.state.dataSources.length} style={{ height: 300 }}>
+                <DataSourcePieChart ds={this.state.dataSources} />
+              </ChartCard>
+            </Col>
+            <Col span={8}>
+              <ChartCard title="Functions" total={this.state.functions.length} style={{ height: 300 }}>
                 <FunctionPieChart functions={this.state.functions}/>
               </ChartCard>
             </Col>
