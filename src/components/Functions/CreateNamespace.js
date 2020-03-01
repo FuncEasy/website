@@ -28,6 +28,7 @@ class CreateNamespace extends React.Component{
         confirmLoading: false,
         visible: false,
       });
+      window.location.reload();
     }).catch(e => {
       this.setState({
         confirmLoading: false,

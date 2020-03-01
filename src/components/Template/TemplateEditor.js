@@ -169,8 +169,8 @@ class TemplateEditor extends React.Component {
                       value={this.state.template}
                       placeholder="// write template here"
                       mode={this.state.selectRuntime.lang}
-                      theme="script-editor"
-                      name="blah2"
+                      theme="monokai"
+                      name="script-editor"
                       fontSize={14}
                       showPrintMargin={true}
                       showGutter={true}
