@@ -1,5 +1,5 @@
 import React from "react";
-import DataSourceList from "./DataSourceList";
+import RuntimeList from "./RuntimeList"
 import {Button} from "antd";
 class Index extends React.Component {
   constructor(props) {
@@ -9,9 +9,9 @@ class Index extends React.Component {
   render() {
     return (
       <div>
-        <Button type="primary" onClick={() => this.props.history.push('/data-source/create')}>新建数据源</Button>
+        <Button type="primary" onClick={() => this.props.history.push('/runtime/create')}>New Runtime</Button>
         <div style={{ marginBottom: 20 }}/>
-        <DataSourceList/>
+        <RuntimeList/>
       </div>
     )
   }

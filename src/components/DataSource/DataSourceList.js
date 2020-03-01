@@ -1,6 +1,7 @@
 import React from 'react';
 import {Card, message, Table, Tag, Modal} from "antd";
 import http from '../../service';
+import { withRouter } from 'react-router-dom';
 const { confirm } = Modal;
 
 class DataSourceList extends React.Component{
@@ -46,13 +47,13 @@ class DataSourceList extends React.Component{
       {
         title: 'ID',
         dataIndex: 'id',
-        key: 'id'
+        key: 'id',
+        render: (id, record) => <a onClick={() => this.props.history.push(`/data-source/${id}`)}>{id}</a>,
       },
       {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        render: (text, record) => <a onClick={() => window.location.href = `/data-source/${record.id}`}>{text}</a>,
       },
       {
         title: 'Mount Functions',
@@ -77,4 +78,4 @@ class DataSourceList extends React.Component{
   }
 }
 
-export default DataSourceList;
+export default withRouter(DataSourceList);

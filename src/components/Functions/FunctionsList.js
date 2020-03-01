@@ -1,5 +1,5 @@
 import React from 'react';
-import {Card, message, Modal} from 'antd';
+import {Card, Empty, message, Modal} from 'antd';
 import http from '../../service';
 import FunctionSubTable from './FunctionSubTable';
 const confirm = Modal.confirm;
@@ -60,6 +60,9 @@ class FunctionsList extends React.Component{
               <FunctionSubTable ns={data.id} />
             </Card>
           ))
+        }
+        {
+          this.state.namespaces.length <= 0 &&  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         }
       </div>
     )

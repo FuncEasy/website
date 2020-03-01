@@ -11,19 +11,22 @@ import Functions from '../Functions';
 import DataSource from "../DataSource";
 import Token from "../Functions/Token";
 import Template from "../Template";
+import Runtime from "../Admin/Runtime";
 import TemplateEditor from "../Template/TemplateEditor";
 import FunctionSteps from '../Functions/FunctionSteps';
 import DataSourceEditor from '../DataSource/DataSourceEditor';
+import RuntimeEditor from "../Admin/Runtime/RuntimeEditor";
 const { Header, Content, Footer, Sider } = Layout;
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.menus = [
-      {name: '仪表盘', key: 'dashboard', icon: 'compass' },
-      {name: '云函数', key: 'functions', icon: 'code-sandbox'},
-      {name: '数据源', key: 'data-source', icon: 'database'},
-      {name: '函数模版', key: 'template', icon: 'switcher'},
-      {name: 'Function Token', key: 'token', icon: 'key'}
+      {name: '仪表盘', key: 'dashboard', icon: 'compass', admin: false },
+      {name: '云函数', key: 'functions', icon: 'code-sandbox', admin: false },
+      {name: '数据源', key: 'data-source', icon: 'database', admin: false },
+      {name: '函数模版', key: 'template', icon: 'switcher', admin: false },
+      {name: 'Function Token', key: 'token', icon: 'key', admin: false },
+      {name: 'Add Runtime', key: 'runtime', icon: 'key', admin: true}
     ];
     this.state = {
       currentMenu: this.menus.find(o => window.location.pathname.match(o.key)) || this.menus[0],
@@ -40,7 +43,9 @@ class App extends React.Component {
   }
 
   render() {
-    const MenuList = this.menus.map(item => (
+    const MenuList = this.menus
+      .filter(item => !item.admin || (item.admin && this.props.auth.data && this.props.auth.data.access === 1))
+      .map(item => (
       <Menu.Item key={item.key} onClick={() => this.setState({currentMenu: item})}>
         <Link to={`/${item.key}`}>
           <Icon type={item.icon}/>
@@ -90,6 +95,9 @@ class App extends React.Component {
                     <Route exact path="/template/create" component={TemplateEditor('create')} />
                     <Route exact path="/template/:id" component={TemplateEditor('edit')} />
                     <Route exact path="/token" component={Token}/>
+                    <Route exact path="/runtime" component={Runtime}/>
+                    <Route exact path="/runtime/create" component={RuntimeEditor('create')} />
+                    <Route exact path="/runtime/:id" component={RuntimeEditor('edit')} />
                   </Switch>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>Fusion ©2019 Created by ZiqianCheng</Footer>
