@@ -67,7 +67,7 @@ class FunctionSteps extends React.Component {
       dataSource_id: undefined,
       templateList: [],
       selectedTemplateId: undefined,
-      templateObj: {},
+      templateObj: undefined,
       template_loading: false,
       data_source_loading: false,
       name: '',
