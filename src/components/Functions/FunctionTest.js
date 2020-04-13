@@ -54,7 +54,7 @@ class FunctionTest extends React.Component {
           resData = JSON.parse(resData)
         } catch (e) {}
         this.setState({
-          respond: JSON.stringify({data: resData}, null, 2),
+          respond: JSON.stringify(resData, null, 2),
           loading: false
         })
       }).catch(e => {
@@ -72,16 +72,15 @@ class FunctionTest extends React.Component {
         message.error(e.message)
       }
       http.post(`/function/${this.state.trigger}`, data).then(r => {
-        let resData = r.data.data;
+        let resData = r.data;
         try {
           resData = JSON.parse(resData)
         } catch (e) {}
         this.setState({
-          respond: JSON.stringify({data: resData}, null, 2),
+          respond: JSON.stringify(resData, null, 2),
           loading: false
         })
       }).catch(e => {
-        console.log(e)
         this.setState({
           respond: e.response.data ? e.response.data.err || 'unknown error' : JSON.stringify(e.response) || 'unknown error',
           loading: false

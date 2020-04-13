@@ -4,7 +4,7 @@ const devConfig = () => config => {
     ...config,
     proxy: {
       '/api': {
-        target: 'http://localhost:30080',
+        target: 'http://localhost:30002',
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''
