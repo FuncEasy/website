@@ -58,7 +58,7 @@ class FunctionReport extends React.Component {
       });
       let daysSpeedReport = daysSpeedReportDate.map(item => ({
         range: item.date,
-        speed: item.averageSpeed === 0 ? 0 : item.averageSpeed.toFixed(1),
+        speed: item.averageSpeed === 0 ? 0 : +item.averageSpeed.toFixed(1),
       }));
 
       let weeksInvokeReport = [];
@@ -81,7 +81,7 @@ class FunctionReport extends React.Component {
       });
       let weeksSpeedReport = weeksSpeedReportData.map(item => ({
         range: item.week,
-        speed: item.averageSpeed === 0 ? 0 : item.averageSpeed.toFixed(1),
+        speed: item.averageSpeed === 0 ? 0 : +item.averageSpeed.toFixed(1),
       }));
       this.setState({
         index,
@@ -100,6 +100,7 @@ class FunctionReport extends React.Component {
   }
 
   render() {
+    console.log(this.state.daysSpeedReport)
     let currentName = this.props.functions.length > 0
       ? this.props.functions[this.state.index].name
       : '';
